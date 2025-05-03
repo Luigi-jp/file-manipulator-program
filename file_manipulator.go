@@ -34,8 +34,8 @@ func main() {
 	os.Exit(0)
 }
 
-func validateArgsCount(args *[]string, count int, format string) error {
-	if len(*args) < count {
+func validateArgsCount(args []string, count int, format string) error {
+	if len(args) < count {
 		return fmt.Errorf("引数を正しく指定してください。\nex) %s", format)
 	}
 	return nil
@@ -51,7 +51,7 @@ func getFileData(path string) []byte {
 }
 
 func reverseFile(args []string) {
-	argsErr := validateArgsCount(&args, 4, "reverse <input file path> <output file path>")
+	argsErr := validateArgsCount(args, 4, "reverse <input file path> <output file path>")
 	if argsErr != nil {
 		fmt.Fprintln(os.Stderr, argsErr)
 		os.Exit(1)
@@ -70,7 +70,7 @@ func reverseFile(args []string) {
 }
 
 func copyFile(args []string) {
-	argsErr := validateArgsCount(&args, 4, "copy <input file path> <output file path>")
+	argsErr := validateArgsCount(args, 4, "copy <input file path> <output file path>")
 	if argsErr != nil {
 		fmt.Fprintln(os.Stderr, argsErr)
 		os.Exit(1)
@@ -88,7 +88,7 @@ func copyFile(args []string) {
 }
 
 func duplicateContents(args []string) {
-	argsErr := validateArgsCount(&args, 4, "duplicate-contents <input file path> <repeat count>")
+	argsErr := validateArgsCount(args, 4, "duplicate-contents <input file path> <repeat count>")
 	if argsErr != nil {
 		fmt.Fprintln(os.Stderr, argsErr)
 		os.Exit(1)
@@ -118,7 +118,7 @@ func duplicateContents(args []string) {
 }
 
 func replaceStringInFile(args []string) {
-	argsErr := validateArgsCount(&args, 5, "replace-string <input file path> <old string> <new string>")
+	argsErr := validateArgsCount(args, 5, "replace-string <input file path> <old string> <new string>")
 	if argsErr != nil {
 		fmt.Fprintln(os.Stderr, argsErr)
 		os.Exit(1)
