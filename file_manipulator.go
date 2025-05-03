@@ -26,19 +26,14 @@ func main() {
 		}
 		input, output := args[2], args[3]
 
-		// input file pathの内容を取得
-		data, err := os.ReadFile(input)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "エラーが発生しました: %v\n", err)
-			os.Exit(1)
-		}
+		data := getFileData(input)
 
 		// input file pathの内容を反転させる
 		slices.Reverse(data)
 
 		// input file pathの内容を反転させた内容をoutput file pathに出力する
 		// output file pathがなければファイルを作成。あれば上書きをする
-		err = os.WriteFile(output, data, 0644)
+		err := os.WriteFile(output, data, 0644)
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "エラーが発生しました。: %v\n", err)
@@ -54,16 +49,11 @@ func main() {
 		}
 		input, output := args[2], args[3]
 
-		// input file pathの内容を取得
-		data, err := os.ReadFile(input)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "エラーが発生しました: %v", err)
-			os.Exit(1)
-		}
+		data := getFileData(input)
 
 		// input file pathの内容をコピーして、output file pathに出力する
 		// output file pathがなければファイルを作成。あれば上書きする
-		err = os.WriteFile(output, data, 0644)
+		err := os.WriteFile(output, data, 0644)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "エラーが発生しました。: %v\n", err)
 			os.Exit(1)
@@ -84,12 +74,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		// input file pathの内容を取得
-		data, err := os.ReadFile(input)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "エラーが発生しました: %v\n", err)
-			os.Exit(1)
-		}
+		data := getFileData(input)
 
 		// input file pathの内容を{repeat count}回複製して、input file pathに追記する
 		f, err := os.OpenFile(input, os.O_APPEND|os.O_WRONLY, 0644)
@@ -115,19 +100,14 @@ func main() {
 
 		input, oldStr, newStr := args[2], args[3], args[4]
 
-		// input file pathの内容を取得
-		data, err := os.ReadFile(input)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "エラーが発生しました: %v\n", err)
-			os.Exit(1)
-		}
+		data := getFileData(input)
 
 		// input file pathの内容から文字列{oldStr}を検索し、{oldStr}を全て{newStr}に変換する
 		content := string(data)
 		replaceContent := strings.ReplaceAll(content, oldStr, newStr)
 
 		// 変換した内容でinput file pathを置き換える
-		err = os.WriteFile(input, []byte(replaceContent), 0644)
+		err := os.WriteFile(input, []byte(replaceContent), 0644)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "エラーが発生しました: %v\n", err)
 			os.Exit(1)
@@ -147,4 +127,13 @@ func validateArgsCount(args *[]string, count int, format string) error {
 		return fmt.Errorf("引数を正しく指定してください。\nex) %s", format)
 	}
 	return nil
+}
+
+func getFileData(path string) []byte {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "エラーが発生しました: %v\n", err)
+		os.Exit(1)
+	}
+	return data
 }
