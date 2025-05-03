@@ -17,21 +17,24 @@ func main() {
 	}
 
 	command := args[1]
+	var err error
 	switch command {
 	case "reverse":
-		reverseFile(args)
+		err = reverseFile(args)
 	case "copy":
-		copyFile(args)
+		err = copyFile(args)
 	case "duplicate-contents":
-		duplicateContents(args)
+		err = duplicateContents(args)
 	case "replace-string":
-		replaceStringInFile(args)
+		err = replaceStringInFile(args)
 	default:
-		fmt.Fprintln(os.Stderr, "コマンドは、[reverse|copy|duplicate-contents|replace-string]のいずれかを選択してください。")
-		os.Exit(1)
+		err = fmt.Errorf("コマンドは、[reverse|copy|duplicate-contents|replace-string]のいずれかを選択してください。")
 	}
 
-	os.Exit(0)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "エラー: %v", err)
+		os.Exit(1)
+	}
 }
 
 func validateArgsCount(args []string, count int, format string) error {
@@ -41,98 +44,109 @@ func validateArgsCount(args []string, count int, format string) error {
 	return nil
 }
 
-func getFileData(path string) []byte {
+func getFileData(path string) ([]byte, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "エラーが発生しました: %v\n", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("ファイルの読み込みに失敗しました。%w", err)
 	}
-	return data
+	return data, nil
 }
 
-func reverseFile(args []string) {
-	argsErr := validateArgsCount(args, 4, "reverse <input file path> <output file path>")
-	if argsErr != nil {
-		fmt.Fprintln(os.Stderr, argsErr)
-		os.Exit(1)
+func reverseFile(args []string) error {
+	err := validateArgsCount(args, 4, "reverse <input file path> <output file path>")
+	if err != nil {
+		return err
 	}
 	input, output := args[2], args[3]
 
-	data := getFileData(input)
-	slices.Reverse(data)
-	err := os.WriteFile(output, data, 0644)
+	data, err := getFileData(input)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "エラーが発生しました。: %v\n", err)
-		os.Exit(1)
+		return err
+	}
+
+	slices.Reverse(data)
+	err = os.WriteFile(output, data, 0644)
+	if err != nil {
+		return err
 	}
 
 	fmt.Printf("%sの内容を反転させたものを%sに出力しました。\n", input, output)
+	return nil
 }
 
-func copyFile(args []string) {
-	argsErr := validateArgsCount(args, 4, "copy <input file path> <output file path>")
-	if argsErr != nil {
-		fmt.Fprintln(os.Stderr, argsErr)
-		os.Exit(1)
+func copyFile(args []string) error {
+	err := validateArgsCount(args, 4, "copy <input file path> <output file path>")
+	if err != nil {
+		return err
 	}
 	input, output := args[2], args[3]
 
-	data := getFileData(input)
-	err := os.WriteFile(output, data, 0644)
+	data, err := getFileData(input)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "エラーが発生しました。: %v\n", err)
-		os.Exit(1)
+		return err
+	}
+
+	err = os.WriteFile(output, data, 0644)
+	if err != nil {
+		return err
 	}
 
 	fmt.Printf("%sの内容をコピーして%sに出力しました。\n", input, output)
+	return nil
 }
 
-func duplicateContents(args []string) {
-	argsErr := validateArgsCount(args, 4, "duplicate-contents <input file path> <repeat count>")
-	if argsErr != nil {
-		fmt.Fprintln(os.Stderr, argsErr)
-		os.Exit(1)
+func duplicateContents(args []string) error {
+	err := validateArgsCount(args, 4, "duplicate-contents <input file path> <repeat count>")
+	if err != nil {
+		return err
 	}
 	input := args[2]
 	repeatCount, err := strconv.Atoi(args[3])
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "repeat countは整数を入力してください。: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("repeat countは整数の入力してください。")
 	}
 
-	data := getFileData(input)
-	f, err := os.OpenFile(input, os.O_APPEND|os.O_WRONLY, 0644)
-	defer f.Close()
+	data, err := getFileData(input)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "エラーが発生しました: %v\n", err)
+		return err
 	}
+
+	f, err := os.OpenFile(input, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
 	for i := 0; i < repeatCount; i++ {
 		_, err := f.Write(data)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "エラーが発生しました: %v\n", err)
-			os.Exit(1)
+			return err
 		}
 	}
 
 	fmt.Printf("%sの内容を%d回複製して%sに追記しました。\n", input, repeatCount, input)
+	return nil
 }
 
-func replaceStringInFile(args []string) {
-	argsErr := validateArgsCount(args, 5, "replace-string <input file path> <old string> <new string>")
-	if argsErr != nil {
-		fmt.Fprintln(os.Stderr, argsErr)
-		os.Exit(1)
+func replaceStringInFile(args []string) error {
+	err := validateArgsCount(args, 5, "replace-string <input file path> <old string> <new string>")
+	if err != nil {
+		return err
 	}
 	input, oldStr, newStr := args[2], args[3], args[4]
 
-	data := getFileData(input)
+	data, err := getFileData(input)
+	if err != nil {
+		return err
+	}
+
 	content := string(data)
 	replaceContent := strings.ReplaceAll(content, oldStr, newStr)
-	err := os.WriteFile(input, []byte(replaceContent), 0644)
+	err = os.WriteFile(input, []byte(replaceContent), 0644)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "エラーが発生しました: %v\n", err)
-		os.Exit(1)
+		return err
 	}
 
 	fmt.Printf("%sの内容から%sを検索して%sに置き換えました。\n", input, oldStr, newStr)
+	return nil
 }
