@@ -19,14 +19,12 @@ func main() {
 	command := args[1]
 	switch command {
 	case "reverse":
-		// 引数のチェック
-		// 引数フォーマット: reverse <input file path> <output file path>
-		if len(args) < 4 {
-			fmt.Println("引数が不足しています。\nex) reverse <input file path> <output file path>")
+		argsErr := validateArgsCount(&args, 4, "reverse <input file path> <output file path>")
+		if argsErr != nil {
+			fmt.Fprintln(os.Stderr, argsErr)
 			os.Exit(1)
 		}
-		input := args[2]
-		output := args[3]
+		input, output := args[2], args[3]
 
 		// input file pathの内容を取得
 		data, err := os.ReadFile(input)
@@ -49,14 +47,12 @@ func main() {
 
 		fmt.Printf("%sの内容を反転させたものを%sに出力しました。\n", input, output)
 	case "copy":
-		// 引数チェック
-		// 引数フォーマット： copy <input file path> <output file path>
-		if len(args) < 4 {
-			fmt.Fprintln(os.Stderr, "引数が不足しています。\nex) copy <input file path> <output file path>")
+		argsErr := validateArgsCount(&args, 4, "copy <input file path> <output file path>")
+		if argsErr != nil {
+			fmt.Fprintln(os.Stderr, argsErr)
 			os.Exit(1)
 		}
-		input := args[2]
-		output := args[3]
+		input, output := args[2], args[3]
 
 		// input file pathの内容を取得
 		data, err := os.ReadFile(input)
@@ -75,14 +71,12 @@ func main() {
 
 		fmt.Printf("%sの内容をコピーして%sに出力しました。\n", input, output)
 	case "duplicate-contents":
-		// 引数チェック
-		// 引数フォーマット： duplicate-contents <input file path> <repeat count>
-		if len(args) < 4 {
-			fmt.Fprintln(os.Stderr, "引数が不足しています。\nex) duplicate-contents <input file path> <repeat count>です。")
+		argsErr := validateArgsCount(&args, 4, "duplicate-contents <input file path> <repeat count>")
+		if argsErr != nil {
+			fmt.Fprintln(os.Stderr, argsErr)
 			os.Exit(1)
 		}
 
-		// 繰り返し回数（repeat count）が数値で入力されているかチェック
 		input := args[2]
 		repeatCount, err := strconv.Atoi(args[3])
 		if err != nil {
@@ -113,16 +107,13 @@ func main() {
 
 		fmt.Printf("%sの内容を%d回複製して%sに追記しました。\n", input, repeatCount, input)
 	case "replace-string":
-		// 引数チェック
-		// 引数フォーマット: replace-string <input file path> <old string> <new string>
-		if len(args) < 5 {
-			fmt.Fprintln(os.Stderr, "引数が不足しています。\nex) replace-string <input file path> <old string> <new string>")
+		argsErr := validateArgsCount(&args, 5, "replace-string <input file path> <old string> <new string>")
+		if argsErr != nil {
+			fmt.Fprintln(os.Stderr, argsErr)
 			os.Exit(1)
 		}
 
-		input := args[2]
-		oldStr := args[3]
-		newStr := args[4]
+		input, oldStr, newStr := args[2], args[3], args[4]
 
 		// input file pathの内容を取得
 		data, err := os.ReadFile(input)
@@ -149,4 +140,11 @@ func main() {
 	}
 
 	os.Exit(0)
+}
+
+func validateArgsCount(args *[]string, count int, format string) error {
+	if len(*args) < count {
+		return fmt.Errorf("引数を正しく指定してください。\nex) %s", format)
+	}
+	return nil
 }
