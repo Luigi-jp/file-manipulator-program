@@ -117,7 +117,7 @@ func duplicateContents(args []string) error {
 	}
 	defer f.Close()
 
-	for i := 0; i < repeatCount; i++ {
+	for range repeatCount {
 		_, err := f.Write(data)
 		if err != nil {
 			return err
