@@ -115,7 +115,11 @@ func duplicateContents(args []string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Fprintln(os.Stderr, "エラー： ファイルクローズに失敗しました。")
+		}
+	}()
 
 	for range repeatCount {
 		_, err := f.Write(data)
